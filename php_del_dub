@@ -1,0 +1,64 @@
+<?php
+$data[0][] = 'Простой текст можем даже что-то создать внимание php';
+$data[0][] = 'внимание php сейчас будем создавать волшебство';
+$data[0][] = 'Сложно что-то придумать внимание php здесь левый текст';
+$data[1][] = 'Петя долго не обращал внимание php и сейчас очень жалеет об этом';
+$data[1][] = 'В этом году много чего уже было и чего ещё предстоит сделать внимание php это очень важно';
+$data[1][] = 'В Москве многие жители узнали что внимание php может редактировать текст';
+
+
+function findDuplicateWords($data) {
+    // Инициализируем массив для подсчета повторений
+    $wordCount = array();
+
+    // Перебираем предложения из массива данных
+    foreach ($data as $sentences) {
+        // Объединяем предложения в одну строку
+        $sentence = implode(' ', $sentences);
+        
+        // Приводим предложение к нижнему регистру и удаляем знаки препинания
+		$sentence = str_replace([' с ', ' до ', ' к ', ' перед ', ' после ', ' через ', ' за ', ' в течении ', ' и ', ' в ', ' у ', ' к ', ' на ', ' над ', ' под ', ' перед ', ' около ', ' вокруг ', ' напротив ', ' между ', ' из-за ', ' ввиду ', ' вследствие ', ' благодаря ', ' по ', ' от ', ' за ', ' ради ', ' для ', ' на ', ' с ', ' по ', ' в ', ' без ', ' о ', ' об ', ' по ', ' про ', ' с ', ' насчет '], '', $sentence);
+        $sentence = strtolower($sentence);
+        $sentence = preg_replace('/[^a-zа-я0-9\s]/u', '', $sentence);
+        
+        // Разделяем предложение на слова
+        $words = array_filter(explode(' ', $sentence));
+
+        // Подсчитываем повторения слов
+        foreach ($words as $word) {
+            if (array_key_exists($word, $wordCount)) {
+                $wordCount[$word]++;
+            } else {
+                $wordCount[$word] = 1;
+            }
+        }
+    }
+
+    // Фильтруем повторяющиеся слова
+    $duplicateWords = array_filter($wordCount, function($count) {
+        return $count > 1;
+    });
+	$duplicateWords = array_filter($duplicateWords);
+	$average = ceil(array_sum($duplicateWords)/count($duplicateWords));
+	$filtered = array_flip(array_filter($duplicateWords, function ($x) use ($average){ return $x > $average; }));
+
+	foreach ($data as $sentences) {
+		foreach ($sentences as $one_text) {
+			$sentence = str_replace($filtered, '', $one_text);
+			$fixed_str[] = trim(preg_replace('/[\s]{2,}/', ' ', $sentence));
+		}
+	}
+    // Возвращаем результат
+    return $fixed_str;
+}
+
+// Пример использования функции
+$result = findDuplicateWords($data);
+	echo '<pre>';
+	print_r($result);
+
+foreach ($result as $text) {
+    echo $text. ".<br>";
+}
+
+?>
