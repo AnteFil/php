@@ -54,8 +54,7 @@ function findDuplicateWords($data) {
 
 // Пример использования функции
 $result = findDuplicateWords($data);
-	echo '<pre>';
-	print_r($result);
+
 
 foreach ($result as $text) {
     echo $text. ".<br>";
