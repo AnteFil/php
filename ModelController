@@ -10,10 +10,16 @@ class ModelController extends Controller
 {
  /////////////////////////////////////////////////////////////////////////   
 public function model(){
+	echo 'Исходный код контроллера здесь <a href="https://github.com/AnteFil/php/blob/main/ModelController">https://github.com/AnteFil/php/blob/main/ModelController</a></br> Цикл специально прерван!!!!</br>Что бы его запустить у себя на сервер нужно скопировать на сервер и добавить в <b>routes/web.php</b> например это Route::get("model", [\App\Http\Controllers\ModelController::class, "model"])->name("model"); ';
+	
 	$html = file_get_contents('https://www.drom.ru/catalog/audi/');	
 	$res_inc = iconv("windows-1251", "UTF-8", $html);
 	//Находим блок
 	preg_match('/data-ftid=.component_cars-list.(.*?)<\/div><style.data-emotion/s', $res_inc, $res_ser);
+	if (empty($res_ser[0])) {
+		echo 'Дром не дал взять данные попробуй ещё раз'; exit();
+	}
+
 	//Дербаним блок
 	preg_match_all('/<a.href="(.*?)".class=".*?">(.*?)<\/a>/s', $res_ser[0], $res_res);
 	
@@ -44,11 +50,12 @@ public function model(){
 		}
 		//Выключаем работу после 3-х итераций
 		$i++;
-		if($i>2){break;}
+		if($i>5){break;}
 	}
 	//Выводим в браузер
 	echo '<pre>';
 	print_r($save);
+	
 }
 
 }
