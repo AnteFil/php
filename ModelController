@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+
+class ModelController extends Controller
+{
+ /////////////////////////////////////////////////////////////////////////   
+public function model(){
+	$html = file_get_contents('https://www.drom.ru/catalog/audi/');	
+	$res_inc = iconv("windows-1251", "UTF-8", $html);
+	//Находим блок
+	preg_match('/data-ftid=.component_cars-list.(.*?)<\/div><style.data-emotion/s', $res_inc, $res_ser);
+	//Дербаним блок
+	preg_match_all('/<a.href="(.*?)".class=".*?">(.*?)<\/a>/s', $res_ser[0], $res_res);
+	
+	foreach($res_res[0] as $nomer => $elem){
+		
+		$save_model_rad[$nomer]['url'] = trim(strip_tags($res_res[1][$nomer]));
+		$save_model_rad[$nomer]['model'] = trim(strip_tags($res_res[2][$nomer]));
+	}
+	$i = 0;
+	foreach($save_model_rad as $nomer => $elem){
+		//Ждём 1 секунду перед новой итерацией цикла что бы не нагружать дром
+		sleep(1);
+		
+		$html = file_get_contents($elem['url']);	
+		$res_inc = iconv("windows-1251", "UTF-8", $html);
+		//Находим блок
+		preg_match_all('/<div.data-ga-stats-name="generations_outlet_item"(.*?)<\/div><\/a>/s', $res_inc, $res_har);
+		//Дербаним блок
+		foreach($res_har[0] as $nomer_har => $elem_har){
+			preg_match('/data-srcset="(.*?)".data/s', $elem_har, $srcset);
+			preg_match('/<span class=".*?">(.*\n.*?)<!-- -->/s', $elem_har, $ryad_god);
+			preg_match('/<div data-ftid="component_article_extended-info"><div>(.*?)<\/div>/s', $elem_har, $pokolenie);
+		
+			$save[$elem['model']][$nomer_har]['srcset'] = $srcset[1];
+			$save[$elem['model']][$nomer_har]['ryad_god'] = str_replace(array("\r", "\n"), ' ', $ryad_god[1]);
+			$save[$elem['model']][$nomer_har]['pokolenie'] = trim(strip_tags($pokolenie[1]));
+
+		}
+		//Выключаем работу после 3-х итераций
+		$i++;
+		if($i>2){break;}
+	}
+	//Выводим в браузер
+	echo '<pre>';
+	print_r($save);
+}
+
+}
